@@ -1,1 +1,1 @@
-Secret Monero Bridge documentation.
+This folder contains Secret Monero Bridge documentation.
