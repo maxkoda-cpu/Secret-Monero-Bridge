@@ -20,7 +20,8 @@ where sXMR will be deposited. The user will then click the submit button provide
 
 After the user supplies the requested information and clicks the submit button, the application will verify the Monero proof-of-payment, and once verified,
 transfer the corresponding sXMR to the provided Secret wallet address. The XMR transferred to the Secret Monero Bridge's Monero wallet remains locked until 
-sXMR tokens are moved back onto the Monero blockchain. Proof-of-Swap receipts will be persisted for a period of time on the Secret Monero Bridge. 
+sXMR tokens are moved back onto the Monero blockchain. Proof-of-Swap receipts will be persisted for a period of time on the Secret Monero Bridge.
+https://github.com/maxkoda-cpu/Secret-Monero-Bridge/blob/main/Docs/Proof-of-Swap.pdf
 
 sXMR -> XMR:
 
