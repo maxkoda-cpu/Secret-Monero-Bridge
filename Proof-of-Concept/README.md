@@ -12,7 +12,7 @@ The PoC will illustrate two stories:
 
 Brief descriptions for these stories follow:
 
-XMR -> sXMR:
+**XMR -> sXMR:**
 
 To convert XMR to sXMR the user will send an amount of XMR to the Secret Monero Bridge's Monero wallet. 
 The user will then use the Secret Monero Bridge web application to provide the Monero proof-of-payment, along with the Secret wallet address
