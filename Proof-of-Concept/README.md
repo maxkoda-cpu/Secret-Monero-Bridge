@@ -20,11 +20,11 @@ where sXMR will be deposited. The user will then click the submit button provide
 
 After the user supplies the requested information and clicks the submit button, the application will verify the Monero proof-of-payment, and once verified,
 transfer the corresponding sXMR to the provided Secret wallet address. The XMR transferred to the Secret Monero Bridge's Monero wallet remains locked until 
-sXMR tokens are moved back onto the Monero blockchain.
+sXMR tokens are moved back onto the Monero blockchain. Proof-of-Swap receipts will be persisted for a period of time on the Secret Monero Bridge. 
 
 sXMR -> XMR:
 
-To convert sXMR tokens to XMR, the user will interact with the Secret Monero Bridge web application. The user will indicate the amount of sXMR to convert and provide the Monero wallet address that will receive the XMR. The user will then click the submit button and the sXMR tokens will be transfered to the Secret Monero Bridge (taken out of circulation), and the XMR transferred to the user provided Monero address. A Monero proof-of-payment receipt will be provided to the user.
+To convert sXMR tokens to XMR, the user will interact with the Secret Monero Bridge web application. The user will indicate the amount of sXMR to convert and provide the Monero wallet address that will receive the XMR. The user will then click the submit button and the sXMR tokens will be transfered to the Secret Monero Bridge (taken out of circulation), and the XMR transferred to the user provided Monero address. A Monero proof-of-payment receipt will be provided to the user. Proof-of-Swap receipts will be persisted for a period of time on the Secret Monero Bridge.
 
 Monero Testnet:
 
