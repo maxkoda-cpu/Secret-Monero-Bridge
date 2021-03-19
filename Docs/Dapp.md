@@ -17,5 +17,5 @@ This package design has security features that simplify verification of the auth
 
 This package design is also censorship resistant, and could be classified as an unstoppable Dapp.
 
-Stay tuned for additional information on this track of development.
+**Stay tuned for additional information on this track of development.**
 
