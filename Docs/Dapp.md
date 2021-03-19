@@ -6,8 +6,9 @@ via a web server, but rather on IPFS, downloaded from IPFS and exectued locally
 
 The design pattern we are considering would provide an immutable hash that would provide a vector to launch the web application on a local machine. While the 
 web application would be available via an immutable hash, the web application content would be mutable. This is accomplished via a unique bootstrap mechanism 
-packaged within the immutable hash (web application) that makes a call to a secret contract on the Secret Network, to get an IPFS to render the web application
-content. So the link to the web application would be immutable, but the web application calls a secret contract to obtain another IPFS link to render the web
+packaged within the immutable hash (web application) that makes a call to a secret contract on the Secret Network, to get an additional IPFS hash to render the web application content. 
+
+So the link to the web application would be immutable, but the web application calls a secret contract to obtain another IPFS link to render the web
 application content. Versioning of the web application can be made by publishing subsequent versions to IPFS and then updating the web application content link
 in the secret contract.
 
