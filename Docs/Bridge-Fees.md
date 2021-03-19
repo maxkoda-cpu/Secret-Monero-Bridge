@@ -7,7 +7,7 @@ The Secret Monero Bridge will charge nominal fees (set through governance) to:
 
 Value enters the Secret Monero Bridge in the form of Monero (XMR) and the XMR is locked in the Secret Monero Bridge Monero multi-signature wallet,
  with the corresponding amount (XMR received - bridge fee) of sXMR (secret token) deposited into user Secret wallets. The sXMR received can then be used
- on the Secret Network. 
+ on the Secret Network for Secret DeFi and other uses. 
  
  When XMR leaves the Secret Network through the Secret Monero Bridge, the sXMR tokens are burned, and XMR is sent to the provided Monero wallet address. There is
  a bridge fee, as well as the Monero transaction (miner) fee charged.
