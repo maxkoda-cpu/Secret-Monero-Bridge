@@ -12,8 +12,8 @@ So the link to the web application would be immutable, but the web application c
 application content. Versioning of the web application can be made by publishing subsequent versions to IPFS and then updating the web application content link
 in the secret contract.
 
-This package design has security features that simplify verification of the authenticity of the web application. Since all content on IPFS is immutable
-(you change the content, you change the hash), user's simply need to verify the web applications published, immutable IPFS hash. Once verified, users can rest assured that the application is legitimate and has **not** been tampered with.
+This package design has security features that simplify verification of the authenticity of the web application. Since all content on IPFS is **content addressable** (you change the content, you change the hash), user's simply need to verify the web applications published, immutable IPFS hash. 
+Once verified, users can rest assured that the application is legitimate and has **not** been tampered with.
 
 This package design is also censorship resistant, and could be classified as an unstoppable Dapp.
 
