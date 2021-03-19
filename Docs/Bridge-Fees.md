@@ -18,6 +18,7 @@ Value enters the Secret Monero Bridge in the form of Monero (XMR) and the XMR is
  The amount of all sXMR in circulation on the Secret Network will balance with the amount of XMR locked in the Secret Monero Bridge Monero multi-signature wallet.
  
  The Monero *check_reserve_proof* will be used to prove reserves in the Secret Monero Bridge Monero multi-signature wallet.
+ https://www.getmonero.org/resources/developer-guides/wallet-rpc.html#check_reserve_proof
  
  
  
