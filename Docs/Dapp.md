@@ -13,8 +13,7 @@ application content. Versioning of the web application can be made by publishing
 in the secret contract.
 
 This package design has security features that simplify verification of the authenticity of the web application. Since all content on IPFS is immutable
-(you change the content, you change the hash), user's simply need to verify the web applications IPFS hash, once verified, users can rest assured that the
-application is legitimate and has **not** been tampered with.
+(you change the content, you change the hash), user's simply need to verify the web applications published, immutable IPFS hash, once verified, users can rest assured that the application is legitimate and has **not** been tampered with.
 
 This package design is also censorship resistant, and could be classified as an unstoppable Dapp.
 
