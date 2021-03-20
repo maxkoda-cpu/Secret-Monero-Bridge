@@ -23,6 +23,7 @@ transfer the corresponding sXMR to the provided Secret wallet address. The XMR t
 sXMR tokens are moved back onto the Monero blockchain. Proof-of-Swap receipts will be persisted for a period of time on the Secret Monero Bridge.
 
 *In the PoC, the user will be providing the Monero Proof-of-Payment in the UI. The actual project will provide Monero wallet functionality within the Secret Monero Bridge UI. This will allow users to directly transfer XMR to the Secret Monero Bridge Monero wallet and automatically collect, then verify the Monero Proof-of-Payment. Users will not have to manually provide the Monero Proof-of-Payment thereby improving the overall user experience.*
+https://github.com/maxkoda-cpu/Secret-Monero-Bridge/blob/main/Proof-of-Concept/UX-ImprovementProposal.pdf
 
 **sXMR -> XMR:**
 
