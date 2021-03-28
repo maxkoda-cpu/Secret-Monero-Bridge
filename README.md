@@ -1,6 +1,9 @@
 # Secret-Monero-Bridge
 A value transfer bridge between the Monero blockchain and the Secret Network.
 
+
+**Proof-of-Concept Video Demonstration:** https://ipfs.io/ipfs/QmcNRXZoqVT3GxPCiaZuq2ho86CY2pXV9tckfxX9cSuZ9v
+
 Background article: https://ipfs.io/ipfs/QmcuMe5EqovsjPayRf3rwDV3UsXkrvUEhBmEbtUev2pgRy
 
 Conceptual High-Level Description: https://ipfs.io/ipfs/QmNweJXm6quAuroZARtPkESoG95vYrNKt3vUhGQvaBy8sT
