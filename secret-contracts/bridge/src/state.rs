@@ -7,6 +7,7 @@ use std::convert::TryFrom;
 use cosmwasm_std::{CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage, Uint128};
 use cosmwasm_storage::{PrefixedStorage, ReadonlyPrefixedStorage};
 
+use crate::viewing_key::ViewingKey;
 use secret_toolkit::storage::{AppendStore, AppendStoreMut};
 
 use crate::constants::*;
@@ -55,6 +56,43 @@ impl<'a, S: Storage> SwapDetailsStore<'a, S> {
         sd.nonce = nonce;
         s.push(sd)?;
         Ok(nonce)
+    }
+}
+
+pub struct ReadonlySwapDetailsStore<'a, S: ReadonlyStorage> {
+    storage: ReadonlyPrefixedStorage<'a, S>,
+}
+
+impl<'a, S: ReadonlyStorage> ReadonlySwapDetailsStore<'a, S> {
+    pub fn init(storage: &'a S) -> Self {
+        Self {
+            storage: ReadonlyPrefixedStorage::new(SWAP_DETAILS_KEY, storage),
+        }
+    }
+
+    pub fn fetch_swap_details(
+        &self,
+        scrt_addr: CanonicalAddr,
+        nonce: u32,
+    ) -> StdResult<SwapDetails> {
+        let not_found_err = Err(StdError::NotFound {
+            kind: std::str::from_utf8(SWAP_DETAILS_KEY).unwrap().to_string(), // no reason to err
+            backtrace: None,
+        });
+        let store = if let Some(result) = AppendStore::<SwapDetails, _>::attach(&self.storage) {
+            result?
+        } else {
+            return not_found_err;
+        };
+
+        let res = store.into_iter().find(|swap_details| match swap_details {
+            Ok(sd) => sd.nonce == nonce && sd.from_secret_address == scrt_addr,
+            Err(_) => false,
+        });
+        match res {
+            Some(swap_details) => swap_details,
+            None => not_found_err,
+        }
     }
 }
 
@@ -203,6 +241,18 @@ impl<'a, S: ReadonlyStorage> ReadonlyMoneroProofsStore<'a, S> {
             None => not_found_err,
         }
     }
+}
+
+// Viewing Keys
+
+pub fn set_viewing_key<S: Storage>(store: &mut S, owner: &CanonicalAddr, key: &ViewingKey) {
+    let mut balance_store = PrefixedStorage::new(VK_KEY, store);
+    balance_store.set(owner.as_slice(), &key.to_hashed());
+}
+
+pub fn read_viewing_key<S: Storage>(store: &S, owner: &CanonicalAddr) -> Option<Vec<u8>> {
+    let balance_store = ReadonlyPrefixedStorage::new(VK_KEY, store);
+    balance_store.get(owner.as_slice())
 }
 
 // Helpers

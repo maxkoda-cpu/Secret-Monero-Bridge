@@ -13,10 +13,11 @@ use crate::msg::{
 };
 use crate::query_messages::{QueryMsg, QueryResponse};
 use crate::state::{
-    ConfigStore, Constants, MoneroProof, MoneroProofsStore, ReadonlyConfigStore,
-    ReadonlyMoneroProofsStore, SwapDetailsStore,
+    read_viewing_key, set_viewing_key, ConfigStore, Constants, MoneroProof, MoneroProofsStore,
+    ReadonlyConfigStore, ReadonlyMoneroProofsStore, ReadonlySwapDetailsStore, SwapDetailsStore,
 };
 use crate::token_msg::TokenMsg;
+use crate::viewing_key::ViewingKey;
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -63,7 +64,67 @@ pub fn query<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, msg: QueryM
     match msg {
         QueryMsg::Config {} => query_config(&deps),
         QueryMsg::SecretMoneroBalance { this_address } => query_sxmr_balance(&deps, this_address),
+        _ => authenticated_queries(deps, msg),
     }
+}
+
+pub fn authenticated_queries<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    msg: QueryMsg,
+) -> QueryResult {
+    match msg {
+        QueryMsg::SwapDetails {
+            address,
+            viewing_key,
+            nonce,
+        } => query_swap_details(&deps, address, viewing_key, nonce),
+        _ => panic!("this query type does not require authentication"),
+    }
+}
+
+fn query_swap_details<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    address: HumanAddr,
+    viewing_key: String,
+    nonce: u32,
+) -> QueryResult {
+    let addr = deps.api.canonical_address(&address)?;
+
+    match auth_vk_access(&deps.storage, addr.clone(), viewing_key) {
+        Some(err) => to_binary(&err),
+        None => {
+            let store = ReadonlySwapDetailsStore::init(&deps.storage);
+            let sd = store.fetch_swap_details(addr, nonce)?;
+
+            to_binary(&QueryResponse::SwapDetails {
+                to_monero_address: sd.to_monero_address,
+                from_secret_address: deps.api.human_address(&sd.from_secret_address)?,
+                amount: sd.amount,
+            })
+        }
+    }
+}
+
+fn auth_vk_access<S: Storage>(
+    store: &S,
+    address: CanonicalAddr,
+    view_key: String,
+) -> Option<QueryResponse> {
+    let vk = ViewingKey(view_key);
+    let expected_key = read_viewing_key(store, &address);
+
+    if expected_key.is_none() {
+        return Some(QueryResponse::ViewingKeyError {
+            msg: "viewing key for this address is not set".to_string(),
+        });
+    }
+    if !vk.is_valid(expected_key.unwrap().as_slice()) {
+        return Some(QueryResponse::ViewingKeyError {
+            msg: "incorrect viewing key".to_string(),
+        });
+    }
+
+    None
 }
 
 fn query_config<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> QueryResult {
@@ -125,7 +186,7 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
         HandleMsg::ChangeSecretMoneroContract { secret_monero, .. } => {
             change_sxmr_contract(deps, env, secret_monero)
         }
-        HandleMsg::ChangeViewingKey { key, .. } => change_vk(deps, env, key),
+        HandleMsg::SetViewingKey { key, .. } => set_vk(deps, env, key),
         HandleMsg::MintSecretMonero {
             proof,
             recipient,
@@ -147,7 +208,7 @@ fn set_minters<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let store = ReadonlyConfigStore::init(&deps.storage);
     let sender = &deps.api.canonical_address(&env.message.sender)?;
-    auth_admin_handler(&store, sender)?;
+    auth_admin_access(&store, sender)?;
 
     let new_minters = new_minters
         .iter()
@@ -180,7 +241,7 @@ fn change_admin<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let store = ReadonlyConfigStore::init(&mut deps.storage);
     let sender = &deps.api.canonical_address(&env.message.sender)?;
-    auth_admin_handler(&store, sender)?;
+    auth_admin_access(&store, sender)?;
 
     let mut consts = store.constants()?;
     consts.admin = deps.api.canonical_address(&address)?;
@@ -201,7 +262,7 @@ fn change_sxmr_contract<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let store = ReadonlyConfigStore::init(&mut deps.storage);
     let sender = &deps.api.canonical_address(&env.message.sender)?;
-    auth_admin_handler(&store, sender)?;
+    auth_admin_access(&store, sender)?;
 
     let mut consts = store.constants()?;
     let old_contract = Snip20::from_stored(consts.snip20, &deps.api)?;
@@ -237,14 +298,32 @@ fn change_sxmr_contract<S: Storage, A: Api, Q: Querier>(
     })
 }
 
-fn change_vk<S: Storage, A: Api, Q: Querier>(
+fn set_vk<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
     vk: String,
 ) -> StdResult<HandleResponse> {
     let store = ReadonlyConfigStore::init(&mut deps.storage);
-    auth_admin_handler(&store, &deps.api.canonical_address(&env.message.sender)?)?;
+    if is_admin(&store, &deps.api.canonical_address(&env.message.sender)?)? {
+        return set_contract_vk(deps, vk);
+    }
 
+    let vk = ViewingKey(vk);
+    let message_sender = deps.api.canonical_address(&env.message.sender)?;
+    set_viewing_key(&mut deps.storage, &message_sender, &vk);
+
+    Ok(HandleResponse {
+        messages: vec![],
+        log: vec![],
+        data: Some(to_binary(&HandleResult::SetViewingKey { status: Success })?),
+    })
+}
+
+fn set_contract_vk<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    vk: String,
+) -> StdResult<HandleResponse> {
+    let store = ReadonlyConfigStore::init(&mut deps.storage);
     let sxmr = Snip20::from_stored(store.constants()?.snip20, &deps.api)?;
     let messages = vec![snip20::set_viewing_key_msg(
         vk,
@@ -256,13 +335,11 @@ fn change_vk<S: Storage, A: Api, Q: Querier>(
     Ok(HandleResponse {
         messages,
         log: vec![],
-        data: Some(to_binary(&HandleResult::ChangeViewingKey {
-            status: Success,
-        })?),
+        data: Some(to_binary(&HandleResult::SetViewingKey { status: Success })?),
     })
 }
 
-fn auth_admin_handler<S: Storage>(
+fn auth_admin_access<S: Storage>(
     store: &ReadonlyConfigStore<S>,
     account: &CanonicalAddr,
 ) -> StdResult<()> {
@@ -293,7 +370,7 @@ fn set_contract_status<S: Storage, A: Api, Q: Querier>(
     status_level: ContractStatusLevel,
 ) -> StdResult<HandleResponse> {
     let store = ReadonlyConfigStore::init(&mut deps.storage);
-    auth_admin_handler(&store, &deps.api.canonical_address(&env.message.sender)?)?;
+    auth_admin_access(&store, &deps.api.canonical_address(&env.message.sender)?)?;
 
     let mut store = ConfigStore::init(&mut deps.storage);
     store.set_contract_status(status_level);
@@ -529,6 +606,78 @@ mod tests {
                     init_msg.secret_monero.contract_hash
                 );
                 assert_eq!(status, ContractStatusLevel::Running)
+            }
+            _ => panic!("unexpected"),
+        }
+    }
+
+    #[test]
+    fn test_query_swap_details() {
+        // SETUP
+        let init_msg = InitMsg {
+            prng_seed: Binary::from("seed".as_bytes()),
+            secret_monero: Snip20 {
+                address: HumanAddr("tokenAddr".to_string()),
+                contract_hash: "tokenHash".to_string(),
+            },
+            viewing_key: "vk".to_string(),
+            min_swap_amount: Uint128(10000),
+            bridge_minter: HumanAddr("bridgeMinter".to_string()),
+        };
+        let mut deps = init_helper(init_msg.clone(), "admin".to_string());
+        let user = "segfaultdoc";
+        let vk = "my_vk";
+        // set vk for user
+        let set_vk_msg = HandleMsg::SetViewingKey {
+            key: vk.to_string(),
+            padding: None,
+        };
+        let result = handle(&mut deps, mock_env(user.to_string(), &[]), set_vk_msg);
+        assert!(
+            result.is_ok(),
+            "SetViewingKey Failed: {}",
+            result.err().unwrap()
+        );
+        // save SwapDetails
+        let mut sd_store = SwapDetailsStore::init(&mut deps.storage);
+        let to_monero_address = "some_monero_addr";
+        let amount = 10000000;
+        let nonce = sd_store
+            .save(
+                &mut SwapDetails {
+                    to_monero_address: to_monero_address.to_string(),
+                    from_secret_address: HumanAddr(user.to_string()),
+                    amount: Uint128(amount),
+                    nonce: 99,
+                }
+                .to_stored(&deps.api)
+                .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(nonce, 0);
+
+        // TEST
+        let query_msg = QueryMsg::SwapDetails {
+            address: HumanAddr(user.to_string()),
+            viewing_key: vk.to_string(),
+            nonce: nonce,
+        };
+        let query_result = query(&deps, query_msg);
+        assert!(
+            query_result.is_ok(),
+            "Query failed: {}",
+            query_result.err().unwrap()
+        );
+        let resp: QueryResponse = from_binary(&query_result.unwrap()).unwrap();
+        match resp {
+            QueryResponse::SwapDetails {
+                to_monero_address: actual_xmr_address,
+                from_secret_address,
+                amount: actual_amount,
+            } => {
+                assert_eq!(actual_xmr_address, to_monero_address);
+                assert_eq!(from_secret_address, HumanAddr(user.to_string()));
+                assert_eq!(actual_amount, Uint128(amount));
             }
             _ => panic!("unexpected"),
         }

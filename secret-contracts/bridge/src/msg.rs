@@ -76,7 +76,7 @@ pub enum HandleMsg {
         secret_monero: Snip20,
         padding: Option<String>,
     },
-    ChangeViewingKey {
+    SetViewingKey {
         key: String,
         padding: Option<String>,
     },
@@ -107,7 +107,7 @@ pub enum HandleMsg {
 pub enum HandleResult {
     ChangeAdmin { status: ResponseStatus },
     ChangeSecretMoneroContract { status: ResponseStatus },
-    ChangeViewingKey { status: ResponseStatus },
+    SetViewingKey { status: ResponseStatus },
     MintSecretMonero { status: ResponseStatus },
     Receive { status: ResponseStatus, nonce: u32 },
     SetContractStatus { status: ResponseStatus },

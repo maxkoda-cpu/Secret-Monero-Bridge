@@ -1,9 +1,12 @@
 mod constants;
-pub mod contract;
-pub mod msg;
+mod contract;
+mod msg;
 mod query_messages;
-pub mod state;
+mod rand;
+mod state;
 mod token_msg;
+mod utils;
+mod viewing_key;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
