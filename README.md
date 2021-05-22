@@ -1,6 +1,8 @@
 # Secret-Monero-Bridge
 A value transfer bridge between the Monero blockchain and the Secret Network.
 
+**Secret Monero Bridge v0.0.1 Dapp (testnet release for testing/evaluation):** https://ipfs.io/ipfs/Qmdy9Ups2Ru3ycKAiCre9zomRbFqgts1eAcvG43E2CcQTt/
+
 **Secret Monero Bridge v0.0.1 preview video demonstration:** https://ipfs.io/ipfs/QmeGYvXnfA8iPMS2AC17TYu1zuVbVqJjnr2MYZ5mJpD1wc
 We will be releasing v0.0.1 on the testnet very soon for more rigorous testing and for community evaluation.
 We are excited about this release and look forward to community feedback.
