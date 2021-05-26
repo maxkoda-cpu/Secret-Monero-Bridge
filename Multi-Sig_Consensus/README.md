@@ -1,3 +1,5 @@
+**25 May 2021. This folder material is being moved to a new repo: https://github.com/maxkoda-cpu/Multi-Sig-Consensus-Node**
+
 This folder contains Multi-Signature Consensus mechanism information.
 
 A multi-signature consensus mechanism will be constructed to securely manage XMR transfers out of the Secret Monero Bridge Monero wallet.
