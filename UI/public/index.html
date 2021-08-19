@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XMR - SCRT Bridge</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#"><img src="/img/SecretMoneroBridge-logo.png" /></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">FAQs</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Block Explorers
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <!-- <div class="dropdown-divider"></div> -->
+                            <a class="dropdown-item" href="#">Monero Block Explorer</a>
+                            <a class="dropdown-item" href="#">Secret Network Block Explorer</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-default"><a class="nav-link" href="#">Connect Keplr Wallet</a></button>
+                    </li>
+                </ul>
+            </div>
+          </nav>
+    </header>
+    <div id="app" class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h1>Monero - Secret Network Bridge</h1>
+                <div class="network-btns">
+                    <button id="xmr-scrt-toggle" class="btn btn-lg active" onclick="xmr_scrt_path()">
+                        <img src='/img/xmr-logo.svg' height="26"> Monero <img class="right-arrow" src='/img/right.svg' height="13"> <img src='/img/scrt-logo.svg' height="26"> Secret
+                    </button>
+                    <button id="scrt-xmr-toggle" class="btn btn-lg" onclick="scrt_xmr_path()">
+                        <img src='/img/scrt-logo.svg' height="26"> Secret <img class="right-arrow" src='/img/right.svg' height="13"> <img src='/img/xmr-logo.svg' height="26"> Monero
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <!-- MONERO TO SECRET NETWORK PATHWAY -->
+                <div id="xmr-to-scrt-path" class="pathway" style="display: block;">
+                    <h2><img src='/img/xmr-logo.svg' height="26"> Monero <img class="right-arrow" src='/img/right.svg' height="13"> <img src='/img/scrt-logo.svg' height="26"> Secret</h2>
+                    <div id="step-1" class="step" style="display: block;">
+                        <h4>Step 1: Send XMR to be locked</h4>
+                        <p>Send XMR to the following address:</p>
+                        <p id="xmr-address">
+                            <!-- Consider getting the address from Secret Contract's state within a .env file? Would allow us to update/change it as needed. -->
+                            9yjvUbbdcFSXRKAoaCGfQQR9UkbkwVBhqYXihc1EcoPdin8YibndTrCbEgQHVNfVdcdmtbt5gFqCnBAt81QakWg83GCkibK
+                        </p>
+                        <p>
+                            ⚠️  ⚠️  ⚠️ <br>
+                            <strong>Be sure to note both XMR Transaction ID & Transaction Key! You will need both to complete the bridging process.</strong>
+                        </p>
+                        <button class="btn btn-primary" onclick="goToStep2()">I have the Txn Id & Key!</button>
+                    </div>
+                    <div id="step-2" class="step" style="display: none;">
+                        <h4>Step 2: Secret Network Smart Contract mints sXMR</h4>
+                        <form action="/submit" method="POST">
+                            <div class="form-group">
+                                <label for="txid">XMR TxID</label>
+                                <input class="form-control" id="txid" name="txid" required minlength="64" maxlength="64">
+                            </div>
+                            <div class="form-group">
+                                <label for="txkey">XMR TxKey</label>
+                                <div class="input-group">
+                                    <input class="form-control" id="txkey" name="txkey" required minlength="64" maxlength="64">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="secretwalletaddress">Secret wallet address</label>
+                                <div class="input-group">
+                                    <input class="form-control" id="secretwalletaddress" name="walletaddress" required
+                                        minlength="20" maxlength="100">
+                                </div>
+                            </div>
+                            <button class="btn btn-default" onclick="goToStep1()">Back</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <div id="sxmrstatus"></div>
+                        </form>
+                    </div>
+                </div>
+                <!-- SECRET NETWORK TO MONERO PATHWAY -->
+                <div id="scrt-to-xmr-path" class="pathway col-sm-12" style="display: none;">
+                    <h2><img src='/img/scrt-logo.svg' height="26"> Secret <img class="right-arrow" src='/img/right.svg' height="13  "> <img src='/img/xmr-logo.svg' height="26"> Monero</h2>
+                    <div class="step">
+                        <b>Address:</b>
+                        <div id="address"></div>
+                        <b>Balance:</b>
+                        <div id="balance"></div>
+                        <p></p>
+                        <form name="sendForm" action="/sxmrtoxmrsubmit">
+                            <div class="form-group">
+                                <label for="recipient">Monero Wallet Address</label>
+                                <input class="form-control" id="recipient" name="recipient">
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount</label>
+                                <div class="input-group">
+                                    <input class="form-control" id="amount" name="amount" required>
+                                    <div class="input-group-append">
+                                        <div class="input-group-text">sXMR</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <div id="status"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <!-- ??? -->
+    </footer>
+
+    <script>
+        // move forward & backwards w/in the xmr - scrt pathway steps
+        function goToStep1() {
+            document.getElementById("step-1").style.display = "block";
+            document.getElementById("step-2").style.display = "none";
+        }
+        function goToStep2() {
+            document.getElementById("step-1").style.display = "none";
+            document.getElementById("step-2").style.display = "block";
+        }
+
+        // pathway button toggling
+        function toggle_path_btns() {
+            document.getElementById("xmr-scrt-toggle").classList.toggle("active");
+            document.getElementById("scrt-xmr-toggle").classList.toggle("active");
+        }
+
+        // logic to handle show/hide on click
+        function xmr_scrt_path() {
+            goToStep1(); // reset back to step #1
+            let target = document.getElementById("xmr-to-scrt-path");
+            if (target.style.display == "none") {
+                toggle_path_btns();
+                document.getElementById("scrt-to-xmr-path").style.display = "none";
+                target.style.display = "block";
+            }
+        }
+        function scrt_xmr_path() {
+            let target = document.getElementById("scrt-to-xmr-path");
+            if (target.style.display == "none") {
+                toggle_path_btns();
+                document.getElementById("xmr-to-scrt-path").style.display = "none";
+                target.style.display = "block";
+            }
+        }
+    </script>
+    <style>
+        header { margin-bottom: 20px; }
+        .btn-lg,
+        .pathway {
+            border: 1px solid rgb(194, 182, 182);
+        }
+        .pathway {
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition: visibility 1s ease-in-out;
+        }
+        .btn-lg.active {
+            background: rgb(228 212 202 / 50%);
+        }
+        .btn-lg:hover {
+            background: rgb(228 212 202 / 50%);
+            transition: 200;
+        }
+        .btn-default {
+            border: 1px solid rgb(194, 182, 182);
+        }
+        .btn-default:hover {
+            background-color: 1px solid rgb(194, 182, 182);
+            transition: 200;
+        }
+        .right-arrow {
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+        .network-btns { padding-top: 20px; }
+        .network-btns button.btn-lg { margin-right: 40px; }
+        #xmr-address {
+            background-color: rgb(194, 182, 182, 0.4);
+            padding: 10px;
+            font-weight: 500;
+            font-family: monospace;
+            border-radius: 5px;
+        }
+    </style>
+
+    <!-- Load JS scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+</body>
+</html>
